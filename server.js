@@ -70,10 +70,6 @@ app.get("/thanks", (req, res) => {
                 });
             } else {
                 res.redirect("/petition");
-                // doesnt redirect sometimes
-                /////////////////////////////
-                /////////////////////////////
-                /////////////////////////////
             }
         })
         .catch((err) => console.log("Error in db.countSignatures", err));
