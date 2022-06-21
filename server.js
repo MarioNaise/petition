@@ -1,17 +1,14 @@
-// to do:
-// vuln
-
 const express = require("express");
 const app = express();
 const { engine } = require("express-handlebars");
 const db = require("./db");
 const cookieSession = require("cookie-session");
-let numSignatures;
 
 app.use(
     cookieSession({
         secret: `I'm always angry.`,
         maxAge: 1000 * 60 * 60 * 24 * 14,
+        sameSite: true,
     })
 );
 
@@ -24,9 +21,9 @@ app.use(
     })
 );
 
-app.use("/", express.static("./public"));
+app.use(express.static("./public"));
 
-app.get("/", (req, res) => {
+app.get("/petition", (req, res) => {
     if (req.session.signed != true) {
         res.render("home", {});
     } else {
@@ -34,20 +31,13 @@ app.get("/", (req, res) => {
     }
 });
 
-app.post("/", (req, res) => {
+app.post("/petition", (req, res) => {
     // console.log("running POST /add-signature", req.body.signature);
     db.addSignature(req.body.firstName, req.body.lastName, req.body.signature)
-        .then(() => {
-            db.countSignatures()
-                .then((result) => {
-                    numSignatures = result.rows[0].count;
-                })
-                .catch((err) =>
-                    console.log("Error in db.countSignatures", err)
-                );
+        .then((result) => {
+            console.log(result.rows);
             req.session.signed = true;
-            req.session.signatureURL = req.body.signature;
-            // console.log(req.body);
+            req.session.signatureId = result.rows[0].id;
             res.redirect("/thanks");
         })
         .catch((err) => {
@@ -59,23 +49,34 @@ app.post("/", (req, res) => {
 });
 
 app.get("/thanks", (req, res) => {
-    if (req.session.signed == true) {
-        res.render("thanks", {
-            data: {
-                url: req.session.signatureURL,
-                numSignatures: numSignatures,
-                /////////////////////////////
-                /////////////////////////////
-                /////////////////////////////
-            },
+    let dataUrl;
+    db.getDataURL(req.session.signatureId)
+        .then((result) => {
+            dataUrl = result.rows[0].signature;
+        })
+        .catch((err) => {
+            console.log("Error in db.getDataURL", err);
         });
-    } else {
-        console.log("eq.session.signed !== true");
-        res.redirect("/");
-        /////////////////////////////
-        /////////////////////////////
-        /////////////////////////////
-    }
+
+    db.countSignatures()
+        .then((result) => {
+            req.session.numSignatures = result.rows[0].count;
+            if (req.session.signed) {
+                res.render("thanks", {
+                    data: {
+                        url: dataUrl,
+                        numSignatures: req.session.numSignatures,
+                    },
+                });
+            } else {
+                res.redirect("/petition");
+                // doesnt redirect sometimes
+                /////////////////////////////
+                /////////////////////////////
+                /////////////////////////////
+            }
+        })
+        .catch((err) => console.log("Error in db.countSignatures", err));
 });
 
 app.get("/signers", (req, res) => {
@@ -92,7 +93,8 @@ app.get("/signers", (req, res) => {
 
 app.get("/logout", (req, res) => {
     req.session = null;
-    res.send("<h1>Logout successful</h1>");
+    res.send(`<h1>Logout successful</h1>
+                <a href="/petition">Back to home</a>`);
 });
 
 app.listen(8080, () => {

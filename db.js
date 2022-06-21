@@ -19,7 +19,8 @@ module.exports.getSignatures = () => {
 
 module.exports.addSignature = (firstName, lastName, signatureURL) => {
     const q = `INSERT INTO signatures (first, last, signature)
-    VALUES ($1, $2, $3)`;
+    VALUES ($1, $2, $3)
+    RETURNING id`;
     const param = [firstName, lastName, signatureURL];
     return db.query(q, param);
 };
@@ -27,4 +28,10 @@ module.exports.addSignature = (firstName, lastName, signatureURL) => {
 module.exports.countSignatures = () => {
     const q = `SELECT COUNT (id) FROM signatures;`;
     return db.query(q);
+};
+
+module.exports.getDataURL = (signatureId) => {
+    const q = `SELECT signature FROM signatures WHERE id = $1;`;
+    const param = [signatureId];
+    return db.query(q, param);
 };
