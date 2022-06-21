@@ -1,0 +1,38 @@
+* {
+    background-color: bisque;
+    font-family: sans-serif;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input {
+    width: 200px;
+}
+
+canvas {
+    border: 1px dotted black;
+    display: block;
+    cursor: crosshair;
+    background-color: white;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+button {
+    margin-top: 10px;
+}
