@@ -11,6 +11,9 @@ const ctxHeight = 100;
 ctx.strokeStyle = "black";
 ctx.fillStyle = "white";
 
+//create white background for every signature
+ctx.fillRect(0, 0, ctxWidth, ctxHeight);
+
 function sign(e) {
     let x = e.clientX - signature.offsetLeft;
     let y = e.clientY - signature.offsetTop;
@@ -30,7 +33,7 @@ document.addEventListener("mouseup", () => {
     let data = signature.toDataURL();
     let signInput = document.getElementById("sign");
     signInput.value = data;
-    console.log(data);
+    // console.log(data);
 });
 
 /////////////

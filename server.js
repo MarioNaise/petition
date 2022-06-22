@@ -1,8 +1,12 @@
 const express = require("express");
 const app = express();
-const { engine } = require("express-handlebars");
 const db = require("./db");
+const { engine } = require("express-handlebars");
 const cookieSession = require("cookie-session");
+const bcrypt = require("./bcrypt");
+
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
 
 app.use(
     cookieSession({
@@ -12,9 +16,6 @@ app.use(
     })
 );
 
-app.engine("handlebars", engine());
-app.set("view engine", "handlebars");
-
 app.use(
     express.urlencoded({
         extended: false,
@@ -23,26 +24,36 @@ app.use(
 
 app.use(express.static("./public"));
 
+// redirect from / to /petition bc I'm to lazy to enter /petition every time
+app.get("/", (req, res) => {
+    res.redirect("/register");
+});
+
 app.get("/petition", (req, res) => {
-    if (req.session.signed != true) {
-        res.render("home", {});
+    if (req.session.login != true) {
+        console.log("petition 1");
+        res.redirect("/register");
     } else {
-        res.redirect("/thanks");
+        if (req.session.signed != true) {
+            res.render("petition", {});
+        } else {
+            res.redirect("/thanks");
+        }
     }
 });
 
 app.post("/petition", (req, res) => {
     // console.log("running POST /add-signature", req.body.signature);
-    db.addSignature(req.body.firstName, req.body.lastName, req.body.signature)
+    db.addSignature(req.body.signature, req.session.user_id)
         .then((result) => {
-            console.log(result.rows);
+            // console.log(result.rows);
             req.session.signed = true;
             req.session.signatureId = result.rows[0].id;
             res.redirect("/thanks");
         })
         .catch((err) => {
             console.log("err in addSignature: ", err);
-            res.render("home", {
+            res.render("petition", {
                 error: true,
             });
         });
@@ -50,12 +61,14 @@ app.post("/petition", (req, res) => {
 
 app.get("/thanks", (req, res) => {
     let dataUrl;
+    //console.log("step1 ", req.session.signatureId); ////////////////////
     db.getDataURL(req.session.signatureId)
         .then((result) => {
+            //console.log("step2 ", req.session.signatureId); ////////////////
             dataUrl = result.rows[0].signature;
         })
         .catch((err) => {
-            console.log("Error in db.getDataURL", err);
+            // console.log("Error in db.getDataURL", err);
         });
 
     db.countSignatures()
@@ -72,25 +85,119 @@ app.get("/thanks", (req, res) => {
                 res.redirect("/petition");
             }
         })
-        .catch((err) => console.log("Error in db.countSignatures", err));
+        .catch((err) => {
+            // console.log("Error in db.countSignatures", err);
+        });
 });
 
 app.get("/signers", (req, res) => {
     // console.log("running GET /signs");
-    db.getSignatures()
-        .then((result) => {
-            // console.log("result.rows from getSignatures", result.rows);
-            res.render("signers", {
-                results: result.rows,
+    if (req.session.signed) {
+        db.getSignatures()
+            .then((result) => {
+                // console.log("result.rows from getSignatures", result.rows);
+                res.render("signers", {
+                    results: result.rows,
+                });
+            })
+            .catch((err) => {
+                // console.log("Error in db.getSignatures", err);
             });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+app.get("/register", (req, res) => {
+    if (req.session.login) {
+        res.redirect("/petition");
+    } else {
+        res.render("register", {});
+    }
+});
+
+app.post("/register", (req, res) => {
+    bcrypt
+        .hash(req.body.password)
+        .then((hash) => {
+            db.addUser(
+                req.body.firstName,
+                req.body.lastName,
+                req.body.email,
+                hash
+            )
+                .then((result) => {
+                    req.session.user_id = result.rows[0].id;
+                    req.session.login = true;
+                    res.redirect("/petition");
+                })
+                .catch((err) => {
+                    // console.log("err in addUser: ", err);
+                    res.render("register", {
+                        error: true,
+                    });
+                });
         })
-        .catch((err) => console.log("Error in db.getSignatures", err));
+        .catch((err) => {
+            console.log("error in bcrypt /register", err);
+        });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", {});
+});
+
+app.post("/login", (req, res) => {
+    // console.log("req.body.password: ", req.body.password);
+    db.login(req.body.email)
+        .then((result) => {
+            // console.log("returned password: ", result.rows[0].password);
+            if (result.rows[0]) {
+                bcrypt
+                    .compare(req.body.password, result.rows[0].password)
+                    .then((isCorrect) => {
+                        if (isCorrect) {
+                            req.session.login = true;
+                            req.session.user_id = result.rows[0].id;
+
+                            db.findSignature(req.session.user_id)
+                                .then((result) => {
+                                    // console.log(result.rows);
+                                    if (result.rows[0]) {
+                                        req.session.signed = true;
+                                        req.session.signatureId =
+                                            result.rows[0].id;
+                                        res.redirect("/thanks");
+                                    } else {
+                                        res.redirect("/petition");
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                });
+                            // res.redirect("/petition");
+                            // console.log("Correct!");
+                        } else {
+                            console.log("Wrong!");
+                            res.render("login", {
+                                error: true,
+                            });
+                        }
+                    });
+            } else {
+                res.render("login", {
+                    error: true,
+                });
+            }
+        })
+        .catch((err) => {
+            console.log("err in login", err);
+        });
 });
 
 app.get("/logout", (req, res) => {
     req.session = null;
-    res.send(`<h1>Logout successful</h1>
-                <a href="/petition">Back to home</a>`);
+    res.render("logout", {});
 });
 
 app.listen(8080, () => {

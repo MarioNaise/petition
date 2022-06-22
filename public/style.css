@@ -1,38 +1,86 @@
 * {
-    background-color: bisque;
-    font-family: sans-serif;
+    font-family: "Bitter", serif;
+    color: white;
     margin: 0;
 }
 
 body {
+    margin: 2em;
+    background: #fff url(/pictures/background.jpg) center center/cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+h1,
+h2,
+p,
+a {
+    margin: 1em;
+    text-align: center;
+    text-shadow: 9px 8px 6px rgba(0, 0, 0, 0.75);
 }
 
 form {
-    margin-top: 20px;
+    margin-top: 1em;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+input,
+canvas,
+button {
+    outline: none !important;
+    border: 1px solid black;
+    box-shadow: 9px 8px 6px -4px rgba(0, 0, 0, 0.75);
+}
+
+label {
+    display: block;
+    margin-top: 1em;
+}
+
 input {
+    padding: 1em;
+    border-radius: 5px;
     width: 200px;
+    color: black;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+label::after {
+    content: ":";
 }
 
 canvas {
     border: 1px dotted black;
+    border-radius: 5px;
     display: block;
     cursor: crosshair;
     background-color: white;
 }
 
-label {
-    display: block;
-    margin-top: 10px;
+button {
+    margin: 1em;
+    padding: 1em;
+    border-radius: 5px;
+    border-style: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+img {
+    margin: 2em;
 }
 
-button {
-    margin-top: 10px;
+a {
+    margin: 2em 0;
+}
+
+ul {
+    margin: 2em;
+}
+
+li {
+    margin: 1em;
 }

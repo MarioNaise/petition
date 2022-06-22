@@ -1,0 +1,18 @@
+<form id="petitionForm" method="post">
+    <h1>
+        Sign our petition about something very important that really matters to
+        us! Like saving the wales.
+    </h1>
+    <label for="signature">Sign here</label>
+    <canvas width="500px" height="100px" id="signature"></canvas>
+    <input type="hidden" type="text" id="sign" name="signature" />
+    {{>error}}
+    <div id="buttonContainer">
+        <button id="submit">SUBMIT</button>
+    </div>
+</form>
+<button id="clear">CLEAR</button>
+<a href="/logout">LOGOUT</a>
+
+
+<script src="/script.js"></script>
