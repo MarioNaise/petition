@@ -7,9 +7,12 @@ const username = "postgres";
 // whats the users password
 const password = "postgres";
 
-const db = spicedPg(
-    `postgres:${username}:${password}@localhost:5432/${database}`
-);
+// const db = spicedPg(
+//     `postgres:${username}:${password}@localhost:5432/${database}`
+// );
+const db =
+    process.env.DATABASE_URL ||
+    `postgres:${username}:${password}@localhost:5432/${database}`;
 
 // console.log("[db] connecting to: ", database);
 

@@ -5,12 +5,15 @@ const { engine } = require("express-handlebars");
 const cookieSession = require("cookie-session");
 const bcrypt = require("./bcrypt");
 
+const COOKIE_SECRET =
+    process.env.COOKIE_SECRET || require("./secrets.json").COOKIE_SECRET;
+
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
 app.use(
     cookieSession({
-        secret: `I'm always angry.`,
+        secret: COOKIE_SECRET,
         maxAge: 1000 * 60 * 60 * 24 * 14,
         sameSite: true,
     })
@@ -200,6 +203,7 @@ app.get("/logout", (req, res) => {
     res.render("logout", {});
 });
 
-app.listen(8080, () => {
-    console.log("Server is listening on PORT 8080...");
+app.listen(process.env.PORT || 8080, () => {
+    console.log("Server is listening on...");
+    console.log("PORT: ", process.env.PORT || 8080);
 });
