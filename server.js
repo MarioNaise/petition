@@ -27,7 +27,7 @@ app.use(
 
 app.use(express.static("./public"));
 
-// redirect from / to /petition bc I'm to lazy to enter /petition every time
+// redirect from / to /register
 app.get("/", (req, res) => {
     res.redirect("/register");
 });
