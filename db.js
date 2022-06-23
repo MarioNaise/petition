@@ -50,14 +50,9 @@ module.exports.login = (email) => {
     return db.query(q, param);
 };
 
+////////////////////// delete later /////////////////////////
 module.exports.findSignature = (user_id) => {
     const q = `SELECT * FROM signatures WHERE user_id = $1`;
     const param = [user_id];
     return db.query(q, param);
 };
-
-// SELECT that find a row in the users table by email address
-
-// SELECT that fins a signature id in the signatures table by the user_id
-// This query will not be needed after tomorrow so you may want to skip it
-// if you are short of time

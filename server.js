@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 
 app.get("/petition", (req, res) => {
     if (req.session.login != true) {
-        console.log("petition 1");
+        //console.log("petition 1");
         res.redirect("/register");
     } else {
         if (req.session.signed != true) {
