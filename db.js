@@ -10,31 +10,31 @@ const password = "postgres";
 // const db = spicedPg(
 //     `postgres:${username}:${password}@localhost:5432/${database}`
 // );
-const db =
+const db = spicedPg(
     process.env.DATABASE_URL ||
-    `postgres:${username}:${password}@localhost:5432/${database}`;
+        `postgres:${username}:${password}@localhost:5432/${database}`
+);
 
 // console.log("[db] connecting to: ", database);
 
-module.exports.getSignatures = () => {
-    return db.query(`SELECT sign FROM signatures`);
-};
-
 module.exports.addSignature = (signatureURL, user_id) => {
     const q = `INSERT INTO signatures (signature, user_id)
-    VALUES ($1, $2)
-    RETURNING id`;
+                VALUES ($1, $2)
+                RETURNING id`;
     const param = [signatureURL, user_id];
     return db.query(q, param);
 };
 
 module.exports.countSignatures = () => {
-    const q = `SELECT COUNT (id) FROM signatures;`;
+    const q = `SELECT COUNT (id) 
+                FROM signatures;`;
     return db.query(q);
 };
 
 module.exports.getDataURL = (signatureId) => {
-    const q = `SELECT signature FROM signatures WHERE id = $1;`;
+    const q = `SELECT signature 
+                FROM signatures 
+                WHERE id = $1;`;
     const param = [signatureId];
     return db.query(q, param);
 };
@@ -48,14 +48,24 @@ module.exports.addUser = (first, last, email, password) => {
 };
 
 module.exports.login = (email) => {
-    const q = `SELECT password, id FROM users WHERE email = $1`;
+    const q = `SELECT password, id 
+                FROM users 
+                WHERE email = $1`;
     const param = [email];
     return db.query(q, param);
 };
 
-////////////////////// delete later /////////////////////////
 module.exports.findSignature = (user_id) => {
-    const q = `SELECT * FROM signatures WHERE user_id = $1`;
+    const q = `SELECT * 
+                FROM signatures 
+                WHERE user_id = $1`;
     const param = [user_id];
     return db.query(q, param);
+};
+
+////////////////////////////////////
+////////////////////////////////////
+////////////////////////////////////
+module.exports.getSignatures = () => {
+    return db.query(`SELECT sign FROM signatures`);
 };

@@ -96,6 +96,9 @@ app.get("/thanks", (req, res) => {
 app.get("/signers", (req, res) => {
     // console.log("running GET /signs");
     if (req.session.signed) {
+        ////////////////////////////////////
+        ////////////////////////////////////
+        ////////////////////////////////////
         db.getSignatures()
             .then((result) => {
                 // console.log("result.rows from getSignatures", result.rows);
