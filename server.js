@@ -47,7 +47,7 @@ app.get("/petition", (req, res) => {
 
 app.post("/petition", (req, res) => {
     // console.log("running POST /add-signature", req.body.signature);
-    db.addSignature(req.body.signature, req.session.user_id)
+    db.addSignature(req.body.signature, req.session.userId)
         .then((result) => {
             // console.log(result.rows);
             req.session.signed = true;
@@ -64,32 +64,40 @@ app.post("/petition", (req, res) => {
 
 app.get("/thanks", (req, res) => {
     let dataUrl;
-    //console.log("step1 ", req.session.signatureId); ////////////////////
     db.getDataURL(req.session.signatureId)
         .then((result) => {
-            //console.log("step2 ", req.session.signatureId); ////////////////
             dataUrl = result.rows[0].signature;
+            db.countSignatures()
+                .then((result) => {
+                    req.session.numSignatures = result.rows[0].count;
+                    if (req.session.signed) {
+                        res.render("thanks", {
+                            data: {
+                                url: dataUrl,
+                                numSignatures: req.session.numSignatures,
+                            },
+                        });
+                    } else {
+                        res.redirect("/petition");
+                    }
+                })
+                .catch((err) => {
+                    // console.log("Error in db.countSignatures", err);
+                });
         })
         .catch((err) => {
             // console.log("Error in db.getDataURL", err);
         });
+});
 
-    db.countSignatures()
+app.post("/thanks", (req, res) => {
+    db.deleteSignature(req.session.userId)
         .then((result) => {
-            req.session.numSignatures = result.rows[0].count;
-            if (req.session.signed) {
-                res.render("thanks", {
-                    data: {
-                        url: dataUrl,
-                        numSignatures: req.session.numSignatures,
-                    },
-                });
-            } else {
-                res.redirect("/petition");
-            }
+            req.session.signed = false;
+            res.redirect("/petition");
         })
         .catch((err) => {
-            // console.log("Error in db.countSignatures", err);
+            console.log("err in deleteSignature", err);
         });
 });
 
@@ -112,7 +120,7 @@ app.post("/register", (req, res) => {
                 hash
             )
                 .then((result) => {
-                    req.session.user_id = result.rows[0].id;
+                    req.session.userId = result.rows[0].id;
                     req.session.login = true;
                     res.redirect("/profile");
                 })
@@ -141,14 +149,14 @@ app.post("/profile", (req, res) => {
         res.redirect("/petition");
     } else {
         let url = req.body.website;
-        let urlCheck = req.body.website.indexOf("http://");
-        let secUrlCheck = req.body.website.indexOf("https://");
-        let thirdUrlCheck = req.body.website.indexOf("//");
+        let urlCheck = url.indexOf("http://");
+        let secUrlCheck = url.indexOf("https://");
+        let thirdUrlCheck = url.indexOf("//");
 
         if (urlCheck != 0 && secUrlCheck != 0 && thirdUrlCheck != 0) {
             url = "";
         }
-        db.addUserInfo(req.body.age, req.body.city, url, req.session.user_id)
+        db.addUserInfo(req.body.age, req.body.city, url, req.session.userId)
             .then((result) => {
                 res.redirect("/petition");
             })
@@ -176,9 +184,9 @@ app.post("/login", (req, res) => {
                     .then((isCorrect) => {
                         if (isCorrect) {
                             req.session.login = true;
-                            req.session.user_id = result.rows[0].id;
+                            req.session.userId = result.rows[0].id;
 
-                            db.findSignature(req.session.user_id)
+                            db.findSignature(req.session.userId)
                                 .then((result) => {
                                     // console.log(result.rows);
                                     if (result.rows[0]) {

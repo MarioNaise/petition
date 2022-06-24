@@ -92,3 +92,9 @@ module.exports.getSignersCity = (city) => {
     const param = [city];
     return db.query(q, param);
 };
+
+module.exports.deleteSignature = (userId) => {
+    const q = `DELETE FROM signatures WHERE user_id = $1;`;
+    const param = [userId];
+    return db.query(q, param);
+};
