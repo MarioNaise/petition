@@ -1,7 +1,7 @@
 <h1>Thanks for supporting us!</h1>
 <ul>
     {{#results}}
-        <li>{{first}} {{last}}</li>
+        <li> {{> signersName}} <span>{{age}}</span> <span><a href="/signers/{{city}}">{{city}}</a></span></li>
     {{/results}}
 </ul>
 {{> logout}}

@@ -17,11 +17,11 @@ const db = spicedPg(
 
 // console.log("[db] connecting to: ", database);
 
-module.exports.addSignature = (signatureURL, user_id) => {
+module.exports.addSignature = (signatureURL, userId) => {
     const q = `INSERT INTO signatures (signature, user_id)
                 VALUES ($1, $2)
                 RETURNING id`;
-    const param = [signatureURL, user_id];
+    const param = [signatureURL, userId];
     return db.query(q, param);
 };
 
@@ -55,17 +55,40 @@ module.exports.login = (email) => {
     return db.query(q, param);
 };
 
-module.exports.findSignature = (user_id) => {
+module.exports.findSignature = (userId) => {
     const q = `SELECT * 
                 FROM signatures 
                 WHERE user_id = $1`;
-    const param = [user_id];
+    const param = [userId];
     return db.query(q, param);
 };
 
-////////////////////////////////////
-////////////////////////////////////
-////////////////////////////////////
-module.exports.getSignatures = () => {
-    return db.query(`SELECT sign FROM signatures`);
+module.exports.addUserInfo = (age, city, url, userId) => {
+    const q = `INSERT INTO user_profiles (age, city, url, user_id)
+                VALUES ($1, $2, $3, $4)`;
+    const param = [age, city, url, userId];
+    return db.query(q, param);
+};
+
+module.exports.getSigners = () => {
+    return db.query(
+        `SELECT users.first, users.last, user_profiles.age, user_profiles.city, user_profiles.url
+        FROM users
+        LEFT OUTER JOIN user_profiles
+        ON users.id = user_profiles.user_id
+        JOIN signatures
+        ON users.id = signatures.user_id;`
+    );
+};
+
+module.exports.getSignersCity = (city) => {
+    const q = `SELECT users.first, users.last, user_profiles.age, user_profiles.city, user_profiles.url
+        FROM users
+        LEFT OUTER JOIN user_profiles
+        ON users.id = user_profiles.user_id
+        JOIN signatures
+        ON users.id = signatures.user_id
+        WHERE LOWER(user_profiles.city) = LOWER($1);`;
+    const param = [city];
+    return db.query(q, param);
 };

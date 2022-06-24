@@ -93,27 +93,6 @@ app.get("/thanks", (req, res) => {
         });
 });
 
-app.get("/signers", (req, res) => {
-    // console.log("running GET /signs");
-    if (req.session.signed) {
-        ////////////////////////////////////
-        ////////////////////////////////////
-        ////////////////////////////////////
-        db.getSignatures()
-            .then((result) => {
-                // console.log("result.rows from getSignatures", result.rows);
-                res.render("signers", {
-                    results: result.rows,
-                });
-            })
-            .catch((err) => {
-                // console.log("Error in db.getSignatures", err);
-            });
-    } else {
-        res.redirect("/petition");
-    }
-});
-
 app.get("/register", (req, res) => {
     if (req.session.login) {
         res.redirect("/petition");
@@ -135,7 +114,7 @@ app.post("/register", (req, res) => {
                 .then((result) => {
                     req.session.user_id = result.rows[0].id;
                     req.session.login = true;
-                    res.redirect("/petition");
+                    res.redirect("/profile");
                 })
                 .catch((err) => {
                     // console.log("err in addUser: ", err);
@@ -147,6 +126,39 @@ app.post("/register", (req, res) => {
         .catch((err) => {
             console.log("error in bcrypt /register", err);
         });
+});
+
+app.get("/profile", (req, res) => {
+    res.render("profile", {});
+});
+
+app.post("/profile", (req, res) => {
+    if (
+        req.body.age === "" &&
+        req.body.city === "" &&
+        req.body.website === ""
+    ) {
+        res.redirect("/petition");
+    } else {
+        let url = req.body.website;
+        let urlCheck = req.body.website.indexOf("http://");
+        let secUrlCheck = req.body.website.indexOf("https://");
+        let thirdUrlCheck = req.body.website.indexOf("//");
+
+        if (urlCheck != 0 && secUrlCheck != 0 && thirdUrlCheck != 0) {
+            url = "";
+        }
+        db.addUserInfo(req.body.age, req.body.city, url, req.session.user_id)
+            .then((result) => {
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in addUserInfo ", err);
+                res.render("profile", {
+                    error: true,
+                });
+            });
+    }
 });
 
 app.get("/login", (req, res) => {
@@ -201,12 +213,47 @@ app.post("/login", (req, res) => {
         });
 });
 
+app.get("/signers", (req, res) => {
+    // console.log("running GET /signs");
+    if (req.session.signed) {
+        db.getSigners()
+            .then((result) => {
+                // console.log("result.rows from getSigners", result.rows);
+                res.render("signers", {
+                    results: result.rows,
+                });
+            })
+            .catch((err) => {
+                console.log("Error in db.getSigners", err);
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+app.get("/signers/:city", (req, res) => {
+    let city = req.params.city.toLocaleLowerCase();
+    if (req.session.signed) {
+        db.getSignersCity(city)
+            .then((result) => {
+                // console.log("result.rows from getSignersCity", result.rows);
+                res.render("signers", {
+                    results: result.rows,
+                });
+            })
+            .catch((err) => {
+                console.log("Error in db.getSignersCity", err);
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
 app.get("/logout", (req, res) => {
     req.session = null;
     res.render("logout", {});
 });
 
 app.listen(process.env.PORT || 8080, () => {
-    console.log("Server is listening on...");
-    console.log("PORT: ", process.env.PORT || 8080);
+    console.log("Server is listening on PORT: ", process.env.PORT || 8080);
 });
