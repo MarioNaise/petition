@@ -211,7 +211,6 @@ app.post("/login", (req, res) => {
                             // res.redirect("/petition");
                             // console.log("Correct!");
                         } else {
-                            console.log("Wrong!");
                             res.render("login", {
                                 error: true,
                             });
@@ -269,7 +268,6 @@ app.get("/signers/:city", (req, res) => {
 app.get("/profile/edit", (req, res) => {
     db.getProfile(req.session.userId)
         .then((result) => {
-            console.log(result.rows);
             res.render("editProfile", {
                 results: result.rows,
             });
@@ -277,6 +275,66 @@ app.get("/profile/edit", (req, res) => {
         .catch((err) => {
             console.log("err in getProfile", err);
         });
+});
+
+app.post("/profile/edit", (req, res) => {
+    if (req.body.password === "") {
+        db.editUser(
+            req.body.first,
+            req.body.last,
+            req.body.email,
+            req.session.userId
+        )
+            .then(() => {
+                db.editProfile(
+                    req.body.age,
+                    req.body.city,
+                    req.body.url,
+                    req.session.userId
+                )
+                    .then(() => {
+                        res.redirect("/thanks");
+                    })
+                    .catch((err) => {
+                        console.log("err in editProfile ", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("err in editUser ", err);
+            });
+    } else {
+        bcrypt
+            .hash(req.body.password)
+            .then((hash) => {
+                db.editUserPassword(
+                    req.body.first,
+                    req.body.last,
+                    req.body.email,
+                    hash,
+                    req.session.userId
+                )
+                    .then(() => {
+                        db.editProfile(
+                            req.body.age,
+                            req.body.city,
+                            req.body.url,
+                            req.session.userId
+                        )
+                            .then(() => {
+                                res.redirect("/thanks");
+                            })
+                            .catch((err) => {
+                                console.log("err in editProfile ", err);
+                            });
+                    })
+                    .catch((err) => {
+                        console.log("err in editUserPassword ", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("err in bcrypt/editUserPassword ", err);
+            });
+    }
 });
 
 //////////////////    LOGOUT       ////////////////////////////
