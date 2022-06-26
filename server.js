@@ -12,13 +12,8 @@ app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
 ///////////////////////   middleware   ///////////////////////////////
-app.use(
-    cookieSession({
-        secret: COOKIE_SECRET,
-        maxAge: 1000 * 60 * 60 * 24 * 14,
-        sameSite: true,
-    })
-);
+
+app.use(express.static("./public"));
 
 app.use(
     express.urlencoded({
@@ -26,12 +21,18 @@ app.use(
     })
 );
 
-app.use(express.static("./public"));
-
 app.use((req, res, next) => {
     res.setHeader("x-frame-options", "deny");
     next();
 });
+
+app.use(
+    cookieSession({
+        secret: COOKIE_SECRET,
+        maxAge: 1000 * 60 * 60 * 24 * 14,
+        sameSite: true,
+    })
+);
 
 ////////////////////    HOME     /////////////////////////////////
 app.get("/", (req, res) => {
