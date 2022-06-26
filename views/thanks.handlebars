@@ -1,11 +1,13 @@
-<h1>Thank you for your signature!</h1>
-{{#data}}
+<div class="layout">
+    <h1>Thank you for your signature!</h1>
+    {{#data}}
     <img src="{{url}}" alt="signature" />
 
     <a class="thanks" href="/signers">See all {{numSignatures}} signers</a>
-{{/data}}
-<form method="post" class="thanks">
-    <button class="thanks" type="submit">Delete your signature</button>
-</form>
-<a class="thanks" href="/profile/edit">Edit your profile</a>
-{{> logout}}
+    {{/data}}
+    <form method="post" class="thanks">
+        <button class="thanks" type="submit">Delete your signature</button>
+    </form>
+    <a class="thanks" href="/profile/edit">Edit your profile</a>
+    {{> logout}}
+</div>

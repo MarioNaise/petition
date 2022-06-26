@@ -13,7 +13,6 @@ body {
 }
 
 h1,
-h2,
 p,
 a {
     margin: 1em;
@@ -27,7 +26,6 @@ form {
     align-items: center;
 }
 
-input,
 canvas,
 button {
     outline: none !important;
@@ -39,21 +37,29 @@ label {
     margin-top: 1em;
 }
 
-input {
-    padding: 1em;
-    border-radius: 5px;
-    width: 200px;
-    color: black;
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
 label::after {
     content: ":";
 }
 
+input {
+    padding: 1em;
+    margin: 0 2em;
+    border: none;
+    border-radius: 5px;
+    width: 200px;
+    color: white;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-bottom: 5px solid black;
+}
+input:focus {
+    outline: none !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
 canvas {
-    border: 1px dotted black;
+    border: 1px dashed black;
     border-radius: 5px;
     display: block;
     cursor: crosshair;
@@ -67,16 +73,18 @@ button {
     border-style: hidden;
     background-color: rgba(0, 0, 0, 0.5);
 }
-img {
+
+button:active {
+    box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.5) inset;
+}
+
+img,
+ul {
     margin: 2em;
 }
 
 a {
     margin: 2em 0;
-}
-
-ul {
-    margin: 2em;
 }
 
 li {
@@ -94,4 +102,14 @@ li span {
     margin: 10px 0;
     font-size: 20px;
     cursor: pointer;
+}
+
+.layout {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50%;
+    box-shadow: 0px 10px 20px 20px rgba(0, 0, 0, 0.7);
 }
