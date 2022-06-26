@@ -86,3 +86,12 @@ li {
 li span {
     padding-left: 1em;
 }
+
+.thanks {
+    background: none;
+    text-decoration: underline;
+    padding: 0;
+    margin: 10px 0;
+    font-size: 20px;
+    cursor: pointer;
+}

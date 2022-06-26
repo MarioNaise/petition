@@ -1,0 +1,24 @@
+<h1>Edit your profile</h1>
+
+<form method="post">
+    {{#results}}
+        <label for="first">First Name</label>
+        <input type="text" name="first" value="{{first}}" />
+        <label for="last">Last Name</label>
+        <input type="text" name="last" value="{{last}}" />
+        <label for="email">Email</label>
+        <input type="text" name="email" value="{{email}}" />
+        <label for="password">Password</label>
+        <input type="password" name="password" />
+        <label for="age">Age</label>
+        <input type="number" name="age" min="0" max="150" value="{{age}}" />
+        <label for="city">City</label>
+        <input type="text" name="city" value="{{city}}" />
+        <label for="homepage">Homepage</label>
+        <input type="url" name="url" value="{{url}}" />
+    {{/results}}
+    <button type="submit">SUBMIT</button>
+
+</form>
+
+{{> logout}}

@@ -2,7 +2,10 @@
 {{#data}}
     <img src="{{url}}" alt="signature" />
 
-    <a href="/signers">See all {{numSignatures}} signers</a>
+    <a class="thanks" href="/signers">See all {{numSignatures}} signers</a>
 {{/data}}
-{{> deleteSignature}}
+<form method="post" class="thanks">
+    <button class="thanks" type="submit">Delete your signature</button>
+</form>
+<a class="thanks" href="/profile/edit">Edit your profile</a>
 {{> logout}}

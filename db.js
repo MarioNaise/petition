@@ -98,3 +98,25 @@ module.exports.deleteSignature = (userId) => {
     const param = [userId];
     return db.query(q, param);
 };
+
+module.exports.getProfile = (userId) => {
+    const q = `SELECT users.first, users.last, users.email, user_profiles.age, user_profiles.city, user_profiles.url
+                FROM users
+                LEFT OUTER JOIN user_profiles
+                ON users.id = user_profiles.user_id
+                WHERE users.id = $1;`;
+    const param = [userId];
+    return db.query(q, param);
+};
+
+module.exports.editProfile = () => {
+    const q = ``;
+    const param = [];
+    return db.query(q, param);
+};
+
+module.exports.editProfilePassword = () => {
+    const q = ``;
+    const param = [];
+    return db.query(q, param);
+};

@@ -11,6 +11,7 @@ const COOKIE_SECRET =
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
+//////////////////////////////////////////////////////////////
 app.use(
     cookieSession({
         secret: COOKIE_SECRET,
@@ -27,11 +28,12 @@ app.use(
 
 app.use(express.static("./public"));
 
-// redirect from / to /register
+////////////////////    HOME     /////////////////////////////////
 app.get("/", (req, res) => {
     res.redirect("/register");
 });
 
+/////////////////   PETITION     /////////////////////////////////
 app.get("/petition", (req, res) => {
     if (req.session.login != true) {
         //console.log("petition 1");
@@ -62,6 +64,7 @@ app.post("/petition", (req, res) => {
         });
 });
 
+///////////////////////    THANKS      ////////////////////////////////
 app.get("/thanks", (req, res) => {
     let dataUrl;
     db.getDataURL(req.session.signatureId)
@@ -101,6 +104,7 @@ app.post("/thanks", (req, res) => {
         });
 });
 
+/////////////////    REGISTER    ////////////////////////////////
 app.get("/register", (req, res) => {
     if (req.session.login) {
         res.redirect("/petition");
@@ -136,6 +140,7 @@ app.post("/register", (req, res) => {
         });
 });
 
+/////////////////////   PROFILE     /////////////////////////////////
 app.get("/profile", (req, res) => {
     res.render("profile", {});
 });
@@ -149,11 +154,12 @@ app.post("/profile", (req, res) => {
         res.redirect("/petition");
     } else {
         let url = req.body.website;
-        let urlCheck = url.indexOf("http://");
-        let secUrlCheck = url.indexOf("https://");
-        let thirdUrlCheck = url.indexOf("//");
 
-        if (urlCheck != 0 && secUrlCheck != 0 && thirdUrlCheck != 0) {
+        if (
+            !url.startsWith("http://") &&
+            !url.startsWith("https://") &&
+            !url.startsWith("//")
+        ) {
             url = "";
         }
         db.addUserInfo(req.body.age, req.body.city, url, req.session.userId)
@@ -169,6 +175,7 @@ app.post("/profile", (req, res) => {
     }
 });
 
+///////////////////    LOGIN         /////////////////////////////
 app.get("/login", (req, res) => {
     res.render("login", {});
 });
@@ -221,6 +228,7 @@ app.post("/login", (req, res) => {
         });
 });
 
+///////////////////     SIGNERS       //////////////////////////////////
 app.get("/signers", (req, res) => {
     // console.log("running GET /signs");
     if (req.session.signed) {
@@ -257,11 +265,27 @@ app.get("/signers/:city", (req, res) => {
     }
 });
 
+///////////////////    EDIT PROFILE    /////////////////////////////
+app.get("/profile/edit", (req, res) => {
+    db.getProfile(req.session.userId)
+        .then((result) => {
+            console.log(result.rows);
+            res.render("editProfile", {
+                results: result.rows,
+            });
+        })
+        .catch((err) => {
+            console.log("err in getProfile", err);
+        });
+});
+
+//////////////////    LOGOUT       ////////////////////////////
 app.get("/logout", (req, res) => {
     req.session = null;
     res.render("logout", {});
 });
 
+////////////////////    SERVER        ////////////////////////////////
 app.listen(process.env.PORT || 8080, () => {
     console.log("Server is listening on PORT: ", process.env.PORT || 8080);
 });
