@@ -21,7 +21,7 @@ a {
 }
 
 h1 {
-    font-size: clamp(1rem, 8vw, 2rem);
+    font-size: clamp(0.5rem, 8vw, 2rem);
 }
 
 form {
@@ -56,10 +56,19 @@ input {
     background-color: rgba(0, 0, 0, 0.5);
     border-bottom: 5px solid black;
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover {
+    -webkit-text-fill-color: white;
+    transition: background-color 5000s ease-in-out 0s;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-bottom: 5px solid black;
+}
+
 input:focus {
-    outline: none !important;
+    outline: none;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-    background-color: rgba(0, 0, 0, 0.5) !important;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 canvas {

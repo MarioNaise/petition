@@ -112,7 +112,7 @@ app.post("/login", (req, res) => {
                                     }
                                 })
                                 .catch((err) => {
-                                    console.log(err);
+                                    console.log("err in findSignature ", err);
                                 });
                         } else {
                             res.render("login", {
@@ -129,17 +129,22 @@ app.post("/login", (req, res) => {
         })
         .catch((err) => {
             console.log("err in login", err);
+            res.render("login", {
+                title: "Login",
+                error: true,
+            });
         });
 });
 
 /////////////////   PETITION     /////////////////////////////////
 app.get("/petition", (req, res) => {
     if (req.session.login !== true) {
-        //console.log("petition 1");
         res.redirect("/register");
     } else {
         if (req.session.signed != true) {
-            res.render("petition", {});
+            res.render("petition", {
+                title: "Petition",
+            });
         } else {
             res.redirect("/thanks");
         }
@@ -158,6 +163,7 @@ app.post("/petition", (req, res) => {
         .catch((err) => {
             console.log("err in addSignature: ", err);
             res.render("petition", {
+                title: "Petition",
                 error: true,
             });
         });
@@ -175,6 +181,7 @@ app.get("/thanks", (req, res) => {
                         req.session.numSignatures = result.rows[0].count;
                         if (req.session.signed) {
                             res.render("thanks", {
+                                title: "Thanks",
                                 data: {
                                     url: dataUrl,
                                     numSignatures: req.session.numSignatures,
@@ -194,17 +201,6 @@ app.get("/thanks", (req, res) => {
     } else {
         res.redirect("/petition");
     }
-});
-
-app.post("/thanks", (req, res) => {
-    db.deleteSignature(req.session.userId)
-        .then((result) => {
-            req.session.signed = false;
-            res.redirect("/petition");
-        })
-        .catch((err) => {
-            console.log("err in deleteSignature", err);
-        });
 });
 
 ///////////////////     SIGNERS       //////////////////////////////////
@@ -281,10 +277,23 @@ app.post("/profile", (req, res) => {
             .catch((err) => {
                 console.log("err in addUserInfo ", err);
                 res.render("profile", {
+                    title: "Profile",
                     error: true,
                 });
             });
     }
+});
+
+///////////////////    DELETE SIGNATURE    /////////////////////////////
+app.post("/deleteSignature", (req, res) => {
+    db.deleteSignature(req.session.userId)
+        .then((result) => {
+            req.session.signed = false;
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("err in deleteSignature", err);
+        });
 });
 
 ///////////////////    EDIT PROFILE    /////////////////////////////
@@ -363,6 +372,36 @@ app.post("/profile/edit", (req, res) => {
                 console.log("err in bcrypt/editUserPassword ", err);
             });
     }
+});
+
+//////////////////    DELETE ACCOUNT       ////////////////////////////
+app.post("/delete", (req, res) => {
+    res.render("deleteAccount", {
+        title: "Delete Account",
+    });
+});
+
+app.get("/deleteAccount", (req, res) => {
+    db.deleteSignature(req.session.userId)
+        .then(() => {
+            db.deleteProfile(req.session.userId)
+                .then(() => {
+                    db.deleteUser(req.session.userId)
+                        .then(() => {
+                            req.session = null;
+                            res.redirect("/register");
+                        })
+                        .catch((err) => {
+                            console.log("err in deleteUser ", err);
+                        });
+                })
+                .catch((err) => {
+                    console.log("err in deleteSProfile ", err);
+                });
+        })
+        .catch((err) => {
+            console.log("err in deleteSignature ", err);
+        });
 });
 
 //////////////////    LOGOUT       ////////////////////////////

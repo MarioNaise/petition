@@ -133,3 +133,15 @@ module.exports.editProfile = (age, city, url, userId) => {
     const param = [age, city, url, userId];
     return db.query(q, param);
 };
+
+module.exports.deleteProfile = (userId) => {
+    const q = `DELETE FROM user_profiles WHERE user_id = $1;`;
+    const param = [userId];
+    return db.query(q, param);
+};
+
+module.exports.deleteUser = (userId) => {
+    const q = `DELETE FROM users WHERE id = $1`;
+    const param = [userId];
+    return db.query(q, param);
+};
