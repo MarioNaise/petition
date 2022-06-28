@@ -16,8 +16,8 @@ ctx.fillRect(0, 0, ctxWidth, ctxHeight);
 
 function sign(e) {
     let x = e.clientX - signature.offsetLeft;
-    let y = e.clientY - signature.offsetTop;
-
+    let y = e.clientY - signature.offsetTop + window.scrollY;
+    // console.log("x: ", x, "y: ", y);
     ctx.lineTo(x, y);
     ctx.stroke();
 }

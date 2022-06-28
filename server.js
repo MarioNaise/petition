@@ -84,6 +84,7 @@ app.post("/register", (req, res) => {
         })
         .catch((err) => {
             console.log("error in bcrypt /register", err);
+            res.sendStatus(500);
         });
 });
 
@@ -122,6 +123,7 @@ app.post("/login", (req, res) => {
                                 })
                                 .catch((err) => {
                                     console.log("err in findSignature ", err);
+                                    res.sendStatus(500);
                                 });
                         } else {
                             res.render("login", {
@@ -205,11 +207,13 @@ app.get("/thanks", (req, res) => {
                         }
                     })
                     .catch((err) => {
-                        // console.log("Error in db.countSignatures", err);
+                        console.log("Error in db.countSignatures", err);
+                        res.sendStatus(500);
                     });
             })
             .catch((err) => {
                 console.log("Error in db.getDataURL", err);
+                res.sendStatus(500);
             });
     } else {
         res.redirect("/petition");
@@ -230,6 +234,7 @@ app.get("/signers", (req, res) => {
             })
             .catch((err) => {
                 console.log("Error in db.getSigners", err);
+                res.sendStatus(500);
             });
     } else {
         res.redirect("/petition");
@@ -249,6 +254,7 @@ app.get("/signers/:city", (req, res) => {
             })
             .catch((err) => {
                 console.log("Error in db.getSignersCity", err);
+                res.sendStatus(500);
             });
     } else {
         res.redirect("/petition");
@@ -311,6 +317,7 @@ app.post("/deleteSignature", (req, res) => {
             })
             .catch((err) => {
                 console.log("err in deleteSignature", err);
+                res.sendStatus(500);
             });
     } else {
         res.sendStatus(403);
@@ -329,6 +336,7 @@ app.get("/profile/edit", (req, res) => {
             })
             .catch((err) => {
                 console.log("err in getProfile", err);
+                res.sendStatus(500);
             });
     } else {
         res.redirect("/petition");
@@ -356,6 +364,7 @@ app.post("/profile/edit", (req, res) => {
                         })
                         .catch((err) => {
                             console.log("err in editProfile ", err);
+                            res.sendStatus(500);
                         });
                 })
                 .catch((err) => {
@@ -388,10 +397,12 @@ app.post("/profile/edit", (req, res) => {
                         })
                         .catch((err) => {
                             console.log("err in editUserPassword ", err);
+                            res.sendStatus(500);
                         });
                 })
                 .catch((err) => {
                     console.log("err in bcrypt/editUserPassword ", err);
+                    res.sendStatus(500);
                 });
         }
     } else {
@@ -425,14 +436,17 @@ app.post("/delete", (req, res) => {
                             })
                             .catch((err) => {
                                 console.log("err in deleteUser ", err);
+                                res.sendStatus(500);
                             });
                     })
                     .catch((err) => {
                         console.log("err in deleteSProfile ", err);
+                        res.sendStatus(500);
                     });
             })
             .catch((err) => {
                 console.log("err in deleteSignature ", err);
+                res.sendStatus(500);
             });
     } else {
         res.redirect("/register");
