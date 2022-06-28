@@ -117,6 +117,10 @@ li span {
     cursor: pointer;
 }
 
+.thanks:active {
+    box-shadow: none;
+}
+
 .layout {
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 5px;

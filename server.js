@@ -34,6 +34,15 @@ app.use(
     })
 );
 
+if (process.env.NODE_ENV == "production") {
+    app.use((req, res, next) => {
+        if (req.headers["x-forwarded-proto"].startsWith("https")) {
+            return next();
+        }
+        res.redirect(`https://${req.hostname}${req.url}`);
+    });
+}
+
 ////////////////////    HOME     /////////////////////////////////
 app.get("/", (req, res) => {
     res.redirect("/register");
@@ -153,20 +162,24 @@ app.get("/petition", (req, res) => {
 
 app.post("/petition", (req, res) => {
     // console.log("running POST /add-signature", req.body.signature);
-    db.addSignature(req.body.signature, req.session.userId)
-        .then((result) => {
-            // console.log(result.rows);
-            req.session.signed = true;
-            req.session.signatureId = result.rows[0].id;
-            res.redirect("/thanks");
-        })
-        .catch((err) => {
-            console.log("err in addSignature: ", err);
-            res.render("petition", {
-                title: "Petition",
-                error: true,
+    if (req.session.login == true) {
+        db.addSignature(req.body.signature, req.session.userId)
+            .then((result) => {
+                // console.log(result.rows);
+                req.session.signed = true;
+                req.session.signatureId = result.rows[0].id;
+                res.redirect("/thanks");
+            })
+            .catch((err) => {
+                console.log("err in addSignature: ", err);
+                res.render("petition", {
+                    title: "Petition",
+                    error: true,
+                });
             });
-        });
+    } else {
+        res.sendStatus(403);
+    }
 });
 
 ///////////////////////    THANKS      ////////////////////////////////
@@ -181,7 +194,7 @@ app.get("/thanks", (req, res) => {
                         req.session.numSignatures = result.rows[0].count;
                         if (req.session.signed) {
                             res.render("thanks", {
-                                title: "Thanks",
+                                title: "Thank You Page",
                                 data: {
                                     url: dataUrl,
                                     numSignatures: req.session.numSignatures,
@@ -224,7 +237,7 @@ app.get("/signers", (req, res) => {
 });
 
 app.get("/signers/:city", (req, res) => {
-    let city = req.params.city.toLocaleLowerCase();
+    let city = req.params.city;
     if (req.session.signed) {
         db.getSignersCity(city)
             .then((result) => {
@@ -254,46 +267,54 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    if (
-        req.body.age === "" &&
-        req.body.city === "" &&
-        req.body.website === ""
-    ) {
-        res.redirect("/petition");
-    } else {
-        let url = req.body.website;
-
+    if (req.session.login == true) {
         if (
-            !url.startsWith("http://") &&
-            !url.startsWith("https://") &&
-            !url.startsWith("//")
+            req.body.age === "" &&
+            req.body.city === "" &&
+            req.body.website === ""
         ) {
-            url = "";
-        }
-        db.addUserInfo(req.body.age, req.body.city, url, req.session.userId)
-            .then((result) => {
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("err in addUserInfo ", err);
-                res.render("profile", {
-                    title: "Profile",
-                    error: true,
+            res.redirect("/petition");
+        } else {
+            let url = req.body.website;
+
+            if (
+                !url.startsWith("http://") &&
+                !url.startsWith("https://") &&
+                !url.startsWith("//")
+            ) {
+                url = "";
+            }
+            db.addUserInfo(req.body.age, req.body.city, url, req.session.userId)
+                .then((result) => {
+                    res.redirect("/petition");
+                })
+                .catch((err) => {
+                    console.log("err in addUserInfo ", err);
+                    res.render("profile", {
+                        title: "Profile",
+                        error: true,
+                    });
                 });
-            });
+        }
+    } else {
+        res.sendStatus(403);
     }
 });
 
 ///////////////////    DELETE SIGNATURE    /////////////////////////////
 app.post("/deleteSignature", (req, res) => {
-    db.deleteSignature(req.session.userId)
-        .then((result) => {
-            req.session.signed = false;
-            res.redirect("/petition");
-        })
-        .catch((err) => {
-            console.log("err in deleteSignature", err);
-        });
+    if (req.session.login == true) {
+        db.deleteSignature(req.session.userId)
+            .then((result) => {
+                req.session.signed = false;
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in deleteSignature", err);
+            });
+    } else {
+        res.sendStatus(403);
+    }
 });
 
 ///////////////////    EDIT PROFILE    /////////////////////////////
@@ -315,93 +336,107 @@ app.get("/profile/edit", (req, res) => {
 });
 
 app.post("/profile/edit", (req, res) => {
-    if (req.body.password === "") {
-        db.editUser(
-            req.body.first,
-            req.body.last,
-            req.body.email,
-            req.session.userId
-        )
-            .then(() => {
-                db.editProfile(
-                    req.body.age,
-                    req.body.city,
-                    req.body.url,
-                    req.session.userId
-                )
-                    .then(() => {
-                        res.redirect("/thanks");
-                    })
-                    .catch((err) => {
-                        console.log("err in editProfile ", err);
-                    });
-            })
-            .catch((err) => {
-                console.log("err in editUser ", err);
-            });
+    if (req.session.login == true) {
+        if (req.body.password === "") {
+            db.editUser(
+                req.body.first,
+                req.body.last,
+                req.body.email,
+                req.session.userId
+            )
+                .then(() => {
+                    db.editProfile(
+                        req.body.age,
+                        req.body.city,
+                        req.body.url,
+                        req.session.userId
+                    )
+                        .then(() => {
+                            res.redirect("/thanks");
+                        })
+                        .catch((err) => {
+                            console.log("err in editProfile ", err);
+                        });
+                })
+                .catch((err) => {
+                    console.log("err in editUser ", err);
+                });
+        } else {
+            bcrypt
+                .hash(req.body.password)
+                .then((hash) => {
+                    db.editUserPassword(
+                        req.body.first,
+                        req.body.last,
+                        req.body.email,
+                        hash,
+                        req.session.userId
+                    )
+                        .then(() => {
+                            db.editProfile(
+                                req.body.age,
+                                req.body.city,
+                                req.body.url,
+                                req.session.userId
+                            )
+                                .then(() => {
+                                    res.redirect("/thanks");
+                                })
+                                .catch((err) => {
+                                    console.log("err in editProfile ", err);
+                                });
+                        })
+                        .catch((err) => {
+                            console.log("err in editUserPassword ", err);
+                        });
+                })
+                .catch((err) => {
+                    console.log("err in bcrypt/editUserPassword ", err);
+                });
+        }
     } else {
-        bcrypt
-            .hash(req.body.password)
-            .then((hash) => {
-                db.editUserPassword(
-                    req.body.first,
-                    req.body.last,
-                    req.body.email,
-                    hash,
-                    req.session.userId
-                )
-                    .then(() => {
-                        db.editProfile(
-                            req.body.age,
-                            req.body.city,
-                            req.body.url,
-                            req.session.userId
-                        )
-                            .then(() => {
-                                res.redirect("/thanks");
-                            })
-                            .catch((err) => {
-                                console.log("err in editProfile ", err);
-                            });
-                    })
-                    .catch((err) => {
-                        console.log("err in editUserPassword ", err);
-                    });
-            })
-            .catch((err) => {
-                console.log("err in bcrypt/editUserPassword ", err);
-            });
+        res.sendStatus(403);
     }
 });
 
 //////////////////    DELETE ACCOUNT       ////////////////////////////
-app.post("/delete", (req, res) => {
-    res.render("deleteAccount", {
-        title: "Delete Account",
-    });
+app.get("/delete", (req, res) => {
+    if (req.session.login == true) {
+        res.render("deleteAccount", {
+            title: "Delete Account",
+        });
+    } else {
+        res.redirect("/register");
+    }
 });
 
-app.get("/deleteAccount", (req, res) => {
-    db.deleteSignature(req.session.userId)
-        .then(() => {
-            db.deleteProfile(req.session.userId)
-                .then(() => {
-                    db.deleteUser(req.session.userId)
-                        .then(() => {
-                            req.session = null;
-                            res.redirect("/register");
-                        })
-                        .catch((err) => {
-                            console.log("err in deleteUser ", err);
-                        });
-                })
-                .catch((err) => {
-                    console.log("err in deleteSProfile ", err);
-                });
-        })
-        .catch((err) => {
-            console.log("err in deleteSignature ", err);
-        });
+app.post("/delete", (req, res) => {
+    if (req.session.login == true) {
+        db.deleteSignature(req.session.userId)
+            .then(() => {
+                db.deleteProfile(req.session.userId)
+                    .then(() => {
+                        db.deleteUser(req.session.userId)
+                            .then(() => {
+                                req.session = null;
+                                res.render("profileDeleted", {
+                                    title: "Profile deleted",
+                                });
+                            })
+                            .catch((err) => {
+                                console.log("err in deleteUser ", err);
+                            });
+                    })
+                    .catch((err) => {
+                        console.log("err in deleteSProfile ", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("err in deleteSignature ", err);
+            });
+    } else {
+        res.redirect("/register");
+    }
 });
 
 //////////////////    LOGOUT       ////////////////////////////
