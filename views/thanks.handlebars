@@ -5,11 +5,11 @@
 
     <a class="thanks" href="/signers">See all {{numSignatures}} signers</a>
     {{/data}}
-    <form method="post" action="/deleteSignature" class="thanks">
+    <form method="post" action="/deleteSignature">
         <button class="thanks" type="submit">Delete your signature</button>
     </form>
      
-    <a class="thanks" href="/profile/edit">Edit your profile</a>
-    <a class="thanks" href="/delete">Delete your profile</a>
+    <a class="profile" href="/profile/edit">Edit your profile</a>
+    <a class="profile" href="/delete">Delete your profile</a>
     {{> logout}}
 </div>
